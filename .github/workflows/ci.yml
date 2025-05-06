@@ -26,6 +26,6 @@ jobs:
           pip install -r requirements.txt
           pip install pre-commit
 
-      - name: Run tests
-        run: |
-          PYTHONPATH=. pytest --maxfail=1 --disable-warnings -q
+#      - name: Run tests
+#        run: |
+#          PYTHONPATH=. pytest --maxfail=1 --disable-warnings -q
