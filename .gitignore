@@ -1,0 +1,48 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+*.egg-info/
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/
+.DS_Store
+
+# Test coverage
+.coverage
+nosetests.xml
+coverage.xml
+*.cover
+
+# Pytest
+.cache/
+
+# mypy
+.mypy_cache/
+
+# tox
+.tox/
+
+# pre-commit
+.pre-commit-config.yaml
+.pre-commit-config.yaml-tmp
+
+# pyenv
+.python-version
+
+# VS Code settings
+.vscode/
