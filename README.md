@@ -2,33 +2,10 @@
 
 Language model fine-tuning for custom dialog dataset and deploy it as a chat interface using Gradio.
 
-## Project Structure
-
-```
-.
-├── .github/workflows/   # CI/CD workflows
-├── gradio-app/          # Gradio interface components
-│   ├── app.py        
-│   └── deploy.py   
-├── weights/           
-├── tests/               # Test files
-├── train/               # Training and evaluation scripts
-│   ├── train.py         # Script for fine-tuning using LoRA
-│   └── evaluate.py      # Script for model evaluation
-├── .cz.yaml             # Commitizen configuration
-├── .flake8              # Flake8 linter configuration
-├── .gitignore           # Git ignore file
-├── main.py              # Application entry point
-├── mypy.ini             # MyPy type checker configuration
-├── pyproject.toml       # Project configuration
-└── requirements.txt     # Python dependencies
-```
-
 ## Technical Details
 
-* Base model: EleutherAI/pythia-160m (chosen for fine-tuning on a single RTX 3090)
-* Dataset: allenai/dialoglue with Wizard of Wikipedia (WoW) configuration
-* Fine-tuning: Parameter-Efficient Fine-Tuning (PEFT) with LoRA
+* Base model: EleutherAI/pythia-160m (for single RTX 3090)
+* Dataset: roskoN/dailydialog with custom configuration
 * Evaluation metrics: BLEU, ROUGE, and Perplexity
 * Interface: Gradio chat interface
 
