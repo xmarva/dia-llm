@@ -13,9 +13,8 @@ from transformers import (
 )
 
 MODEL_NAME = "EleutherAI/pythia-160m"
-DATASET_NAME = "allenai/dialoglue"
-DATASET_CONFIG = "wow"
-OUTPUT_DIR = "./output"
+DATASET_NAME = "roskoN/dailydialog"
+OUTPUT_DIR = "./weights"
 LORA_R = 8
 LORA_ALPHA = 16
 LORA_DROPOUT = 0.05
@@ -25,34 +24,71 @@ LEARNING_RATE = 2e-4
 NUM_EPOCHS = 3
 
 
-def prepare_dataset(tokenizer):
-    dataset = load_dataset(DATASET_NAME, DATASET_CONFIG)
+def prepare_dataset_for_assistant_training(tokenizer, dataset_name):
+    dataset = load_dataset(dataset_name)
 
-    def format_dialog(example):
-        dialog = []
-        for i in range(len(example["user_utterance"])):
-            dialog.append(f"Human: {example['user_utterance'][i]}")
-            if i < len(example["system_response"]):
-                dialog.append(f"Assistant: {example['system_response'][i]}")
+    def extract_dialog_pairs(example):
+        pairs = []
 
-        return {"text": "\n".join(dialog)}
+        utterances = example["utterances"]
 
-    tokenized_datasets = {}
-    for split in dataset.keys():
-        formatted_dataset = dataset[split].map(
-            format_dialog, remove_columns=dataset[split].column_names
-        )
+        for i in range(1, len(utterances), 2):
+            if i >= len(utterances):
+                break
 
-        def tokenize_function(examples):
-            return tokenizer(
-                examples["text"], truncation=True, max_length=512, padding="max_length"
+            context = []
+            for j in range(0, i):
+                speaker = "Human" if j % 2 == 0 else "Assistant"
+                context.append(f"{speaker}: {utterances[j]}")
+
+            answer = utterances[i]
+
+            pairs.append(
+                {"context": "\n".join(context), "answer": f"Assistant: {answer}"}
             )
 
-        tokenized_datasets[split] = formatted_dataset.map(
-            tokenize_function, batched=True, remove_columns=["text"]
+        return pairs
+
+    processed_datasets = {}
+    for split in dataset.keys():
+        dialog_pairs = []
+        for example in dataset[split]:
+            pairs = extract_dialog_pairs(example)
+            dialog_pairs.extend(pairs)
+
+        from datasets import Dataset
+
+        processed_dataset = Dataset.from_dict(
+            {
+                "context": [pair["context"] for pair in dialog_pairs],
+                "answer": [pair["answer"] for pair in dialog_pairs],
+            }
         )
 
-    return tokenized_datasets
+        def tokenize_pair(examples):
+            inputs = tokenizer(
+                examples["context"],
+                truncation=True,
+                max_length=384,  # Оставляем место для ответов
+                padding="max_length",
+            )
+
+            targets = tokenizer(
+                examples["answer"],
+                truncation=True,
+                max_length=128,
+                padding="max_length",
+            )
+
+            inputs["labels"] = targets["input_ids"]
+
+            return inputs
+
+        processed_datasets[split] = processed_dataset.map(
+            tokenize_pair, batched=True, remove_columns=["context", "answer"]
+        )
+
+    return processed_datasets
 
 
 def train():
@@ -62,6 +98,8 @@ def train():
     tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
+
+    tokenized_datasets = prepare_dataset_for_assistant_training(tokenizer, DATASET_NAME)
 
     model = AutoModelForCausalLM.from_pretrained(
         MODEL_NAME, torch_dtype=torch.float16, device_map="auto"
@@ -79,11 +117,9 @@ def train():
     model = get_peft_model(model, peft_config)
     model.print_trainable_parameters()
 
-    tokenized_datasets = prepare_dataset(tokenizer)
-
     training_args = TrainingArguments(
         output_dir=OUTPUT_DIR,
-        evaluation_strategy="epoch",
+        eval_strategy="epoch",
         learning_rate=LEARNING_RATE,
         per_device_train_batch_size=BATCH_SIZE,
         per_device_eval_batch_size=BATCH_SIZE,

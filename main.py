@@ -1,10 +1,9 @@
 import argparse
 import os
 
-from app import create_demo
-from evaluate import evaluate_model
-
-from train import train
+from app.app import create_demo
+from model.evalu import evaluate_model
+from model.train import train
 
 
 def main():

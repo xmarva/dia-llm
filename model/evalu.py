@@ -5,8 +5,7 @@ from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 MODEL_PATH = "./output/final_model"
-DATASET_NAME = "allenai/dialoglue"
-DATASET_CONFIG = "wow"
+DATASET_NAME = "roskoN/dailydialog"
 TEST_SAMPLES = 100  # Number of samples to evaluate
 
 
@@ -19,7 +18,7 @@ def evaluate_model():
         MODEL_PATH, torch_dtype=torch.float16, device_map="auto"
     )
 
-    dataset = load_dataset(DATASET_NAME, DATASET_CONFIG, split="test")
+    dataset = load_dataset(DATASET_NAME, split="test")
 
     perplexity = evaluate.load("perplexity")
     bleu = evaluate.load("bleu")
