@@ -5,7 +5,7 @@ huggingface_hub==0.31.1
 peft==0.15.2
 torch==2.2.2
 tqdm==4.67.1
-transformers==4.52.0.dev0
+transformers>=4.51,<4.52
 torch==2.2.2
 torchvision==0.17.2
 torchaudio==2.5.1
