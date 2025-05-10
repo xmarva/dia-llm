@@ -6,7 +6,6 @@ peft==0.15.2
 torch==2.2.2
 tqdm==4.67.1
 transformers==4.52.0.dev0
-transformers.egg==info
 torch==2.2.2
 torchvision==0.17.2
 torchaudio==2.5.1
