@@ -1,4 +1,4 @@
-name: Python CI
+name: Docker-based Python CI
 
 on:
   push:
@@ -9,23 +9,33 @@ on:
       - main
 
 jobs:
-  build:
+  docker-build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Set up Python
-        uses: actions/setup-python@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Cache Docker layers
+        uses: actions/cache@v3
         with:
-          python-version: '3.10'
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
 
-      - name: Install dependencies
+      - name: Build Docker image for CI
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pre-commit
+          docker build \
+            --build-arg TARGET=ci \
+            --file Dockerfile \
+            --target ci \
+            --tag dia-llm-ci \
+            .
 
-#      - name: Run tests
-#        run: |
-#          PYTHONPATH=. pytest --maxfail=1 --disable-warnings -q
+      - name: Run container and verify setup
+        run: |
+          docker run --rm dia-llm-ci python3 -c "print('Docker CI is working')"
