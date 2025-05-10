@@ -6,6 +6,6 @@ peft==0.15.2
 torch==2.2.2
 tqdm==4.67.1
 transformers>=4.51,<4.52
-torch==2.2.2
-torchvision==0.17.2
-torchaudio==2.5.1
+torch>=2.2.2,<2.6.0
+torchvision>=0.17.2,<0.18.0
+torchaudio>=2.5.0,<2.6.0
